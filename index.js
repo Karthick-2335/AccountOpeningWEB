@@ -1,4 +1,5 @@
 const express = require('express');
+require('dotenv');
 const mongoose = require('mongoose');
 const app = express();
 const cors = require('cors')
@@ -16,5 +17,5 @@ app.listen(4300,() => {
     console.log('server created running n 4300');
 })
 
-mongoose.connect('mongodb://localhost:27017/testDb').
+mongoose.connect(process.env.DbConnection).
   catch(error => console.log(error));
