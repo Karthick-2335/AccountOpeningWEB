@@ -1,13 +1,12 @@
 const {login,otpVerification} = require('./loginSchema');
 const {sendOTP} = require('./../../service/emailService');
+const webToken = require('./../../service/tokenGeneration');
 
 const loginUsers = async (req,res) => {
     try
     {
         const body = req.body;
-        console.log(body);
         const existUser = await otpVerification.find({email : body.email,authenticated:true});
-        console.log(existUser);
         if(existUser.length > 0)
         {
             res.status(200).json({
@@ -63,7 +62,8 @@ const validateOtp = async (req,res) => {
         {
             res.json({
                 success : true,
-                message : 'Otp Valiated Successfully'
+                message : 'Otp Valiated Successfully',
+                token : webToken
             });
         }
         else
@@ -74,7 +74,8 @@ const validateOtp = async (req,res) => {
                 await otpVerification.updateOne({email:body.email},{$set:{authenticated:true}})
                 res.json({
                     success : true,
-                    message : 'Otp Valiated Successfully'
+                    message : 'Otp Valiated Successfully',
+                    token : webToken
                 });
             }
             else
