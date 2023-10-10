@@ -1,61 +1,56 @@
 const fs = require('fs');
 const path = require('path');
 const SipModel = require('../../model/sipModel');
-const {SIP} = require('./sipSchema');
+const { SIP } = require('./sipSchema');
 
-const getSipDetails = (req,res) => {
-    const sipPath = path.join(__dirname,'../../','SIP_JSON.txt');
+const getSipDetails = (req, res) => {
+    const sipPath = path.join(__dirname, '../../', 'SIP_JSON.txt');
     console.log(sipPath);
-    fs.readFile(sipPath,'utf8',(err,data) => {
-        if(err)
-        {
+    fs.readFile(sipPath, 'utf8', (err, data) => {
+        if (err) {
             console.log(err);
             res.status(200).json({
-                success : false,
-                data : err
+                success: false,
+                data: err
             });
         }
-        else
-        {
+        else {
             let response = getBasketDetails(data)
             res.status(200).json({
-                response : response
+                response: response
             });
         }
     })
 }
 
-const postSipDetails = async (req,res) => {
-    try
-    {
+const postSipDetails = async (req, res) => {
+    try {
         const body = req.body;
         const postSIP = await new SIP({
-            ID : body.data[0].ID,
-            Base_Value :body.data[0].Base_Value,
-            Basket_name : body.data[0].Basket_name,
-            Nudgeline1 :body.data[0].Nudgeline1,
-            Nudgeline2 :body.data[0].Nudgeline2,
-            Onelinertext :body.data[0].Onelinertext,
-            StockList : splitStockArray(body.data[0].StockList)
+            ID: body.data[0].ID,
+            Base_Value: body.data[0].Base_Value,
+            Basket_name: body.data[0].Basket_name,
+            Nudgeline1: body.data[0].Nudgeline1,
+            Nudgeline2: body.data[0].Nudgeline2,
+            Onelinertext: body.data[0].Onelinertext,
+            StockList: splitStockArray(body.data[0].StockList)
         });
         const saveSIP = await postSIP.save();
         res.status(200).json({
-            success : true,
-            data : 'Inserted successfully'
+            success: true,
+            data: 'Inserted successfully'
         });
     }
-    catch(err)
-    {
+    catch (err) {
         console.log(err);
         res.json({
-            success : false,
-            message : err
+            success: false,
+            message: err
         });
     }
 }
 
-function splitStockArray(arr)
-{
+function splitStockArray(arr) {
     let StockList = [];
     arr.forEach(e => {
         const stockObj = new SipModel.StockList();
@@ -71,8 +66,7 @@ function splitStockArray(arr)
     return StockList;
 }
 
-function getBasketDetails(data)
-{
+function getBasketDetails(data) {
     const obj = [];
     const apivalue = JSON.parse(data);
     apivalue.forEach(element => {
@@ -96,7 +90,7 @@ function getBasketDetails(data)
         })
         obj.push(basket);
     });
-    const response  = new SipModel.SIPResponse();
+    const response = new SipModel.SIPResponse();
     response.success = true;
     response.successMessage = "API Fetched SuccessFully";
     response.data = obj;
@@ -104,6 +98,6 @@ function getBasketDetails(data)
 }
 
 module.exports = {
-    getSipDetails : getSipDetails,
-    postSipDetails : postSipDetails
+    getSipDetails: getSipDetails,
+    postSipDetails: postSipDetails
 }

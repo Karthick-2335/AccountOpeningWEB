@@ -1,4 +1,4 @@
-const nodemailer = require("nodemailer"); 
+const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -8,24 +8,22 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-const sendotp = async (to,subject,html) => {
-    try
-    {
+const sendotp = async (to, subject, html) => {
+    try {
         let info = await transporter.sendMail({
             from: '"Karthick R" <karthick2335@gmail.com>',
             to: to,
             subject: subject,
             text: `${html}`,
-          });
+        });
         console.log("Message sent: %s", info.messageId); // Output message ID
         console.log("View email: %s", nodemailer.getTestMessageUrl(info));
     }
-    catch(err)
-    {
+    catch (err) {
         console.log(err);
     }
 }
 
 module.exports = {
-    sendOTP : sendotp
+    sendOTP: sendotp
 }

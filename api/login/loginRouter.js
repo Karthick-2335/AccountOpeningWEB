@@ -1,13 +1,11 @@
 const router = require('express').Router();
-const {loginUsers,validateOtp} = require('./loginController');
-try
-{
-    router.post('/validate',validateOtp);
+const { loginUsers, validateOtp } = require('./loginController');
+try {
+    router.post('/validate', validateOtp);
 
-    router.post('/login',loginUsers);
+    router.post('/login', loginUsers);
 }
-catch(err)
-{
+catch (err) {
     console.log(err);
 }
 
