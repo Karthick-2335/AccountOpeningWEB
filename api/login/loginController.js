@@ -69,7 +69,7 @@ const validateOtp = async (req,res) => {
         else
         {
             const authentcation = await otpVerification.find({email : body.email,otpNumber:body.otp,active:'Y'});
-            if(authentcation[0].active === 'Y' && authentcation[0].otpNumber === body.otp)
+            if(authentcation.length > 0)
             {
                 await otpVerification.updateOne({email:body.email},{$set:{authenticated:true}})
                 res.json({
@@ -89,7 +89,7 @@ const validateOtp = async (req,res) => {
     }
     catch(err)
     {
-        console.log(error);
+        console.log(err);
         res.json({
             success : false,
             message : err
