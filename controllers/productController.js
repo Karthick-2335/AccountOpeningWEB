@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const SipModel = require('../../model/sipModel');
-const { SIP } = require('./sipSchema');
+const SipModel = require('./../model/productModel');
+const { SIP } = require('./../schemas/productSchema');
 
 const getSipDetails = (req, res) => {
     const sipPath = path.join(__dirname, '../../', 'SIP_JSON.txt');

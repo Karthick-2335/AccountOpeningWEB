@@ -1,21 +1,19 @@
 const express = require('express');
 require('dotenv/config');
-const mongoose = require('mongoose');
 const app = express();
 const cors = require('cors')
-const sipRouter = require('./api/product/sipRouter');
-const loginRouter = require('./api/login/loginRouter');
+const productRouter = require('./routers/productRouter');
+const loginRouter = require('./routers/loginRouter');
+const commonRouter = require('./routers/commonRouter');
+const dbConnection = require('./dbConnection/connection');
 
 app.use(cors());
 
 app.use(express.json());
 
-app.use('/api/product',sipRouter);
+app.use('/api/product',productRouter);
 app.use('/api',loginRouter);
+app.use('/api/common',commonRouter);
 
-app.listen(4300,() => {
-    console.log('server created running n 4300');
-})
-
-mongoose.connect(process.env.DbConnection).
-  catch(error => console.log(error));
+dbConnection.then(() => app.listen(4300)).
+then(() => console.log('Connected to database and listening to localhost 4300')).catch(error => console.log(error));
