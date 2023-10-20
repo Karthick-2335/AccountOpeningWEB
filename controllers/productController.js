@@ -1,24 +1,27 @@
 const fs = require('fs');
 const path = require('path');
 const SipModel = require('./../model/productModel');
+const response = require('./../model/responseModel');
+const resp = new response();
 const { SIP } = require('./../schemas/productSchema');
 
 const getSipDetails = (req, res) => {
-    const sipPath = path.join(__dirname, '../../', 'SIP_JSON.txt');
+    const sipPath = path.join(__dirname, '../SIP_JSON.txt');
     console.log(sipPath);
     fs.readFile(sipPath, 'utf8', (err, data) => {
         if (err) {
-            console.log(err);
-            res.status(200).json({
-                success: false,
-                data: err
-            });
+            resp.success = false;
+            resp.errorMessage = "We can't fetch the product details";
+            resp.statusCode = 404;
+            res.send(resp);
         }
         else {
             let response = getBasketDetails(data)
-            res.status(200).json({
-                response: response
-            });
+            resp.success = true;
+            resp.successMessage = 'Basketdetails fetched successfully';
+            resp.statusCode = 200;
+            resp.results = response;
+            res.send(resp);
         }
     })
 }
@@ -90,11 +93,7 @@ function getBasketDetails(data) {
         })
         obj.push(basket);
     });
-    const response = new SipModel.SIPResponse();
-    response.success = true;
-    response.successMessage = "API Fetched SuccessFully";
-    response.data = obj;
-    return response;
+    return obj;
 }
 
 module.exports = {

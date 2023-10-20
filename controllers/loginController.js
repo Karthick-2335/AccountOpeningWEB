@@ -7,10 +7,10 @@ const resp = new response();
 const loginUsers = async (req, res) => {
     try {
         const loginModel = req.body;
-        const existUser = await otpVerification.find({ email: loginModel.email, authenticated: true });
+        const existUser = await otpVerification.find({ $and : [{authenticated : true},{$or : [{email : loginModel.email},{mobile : loginModel.mobile}]}]});
         if (existUser.length > 0) {
-            resp.success = true;
-            resp.message = "Email already registered with us. Please resume the journey";
+            resp.success = false;
+            resp.errorMessage = "Email or Mobile already registered with us. Please resume the journey";
             resp.statusCode = 200;
             res.send(resp)
         }
@@ -68,7 +68,7 @@ const validateOtp = async (req, res) => {
                 resp.error = true;
                 resp.errorMessage = "OTP validated failed";
                 resp.statusCode = 200;
-                res.ssend(resp);
+                res.send(resp);
             }
         }
 
@@ -82,8 +82,27 @@ const validateOtp = async (req, res) => {
     }
 }
 
+const resume = (req,res) => {
+    try
+    {
+        const panNumber = req.params.panNumber;
+        console.log(panNumber);
+        resp.success = true;
+        res.send(resp)
+    }
+    catch(err)
+    {
+        resp.success = false;
+        resp.error = true;
+        resp.errorMessage = err;
+        resp.statusCode = 300;
+        res.send(resp);
+    }
+}
+
 module.exports =
 {
     loginUsers,
-    validateOtp
+    validateOtp,
+    resume
 }

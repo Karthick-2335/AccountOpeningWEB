@@ -19,15 +19,7 @@ class StockList {
     Imagepath;
     OriginalQty;
 }
-class SIPResponse {
-    success;
-    data;
-    NoOfMonths = [6,12,24,46,60];
-    selectMonth = 12;
-    successMessage;
-    errorMessage;
-    errorcode;
-}
+
 class SIPRequest {
     SIPBucket = new SIPBucket();
     selectMonth;
@@ -35,5 +27,4 @@ class SIPRequest {
 module.exports = {
     SIPBucket : SIPBucket,
     StockList : StockList,
-    SIPResponse : SIPResponse
 }
