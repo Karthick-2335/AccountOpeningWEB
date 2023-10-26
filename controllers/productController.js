@@ -1,8 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const SipModel = require('./../model/productModel');
-const response = require('./../model/responseModel');
-const resp = new response();
+const {SIPBucket,Basketdetails,StockList} = require('./../model/productModel');
+const {Response}= require('./../model/responseModels');
 const { SIP } = require('./../schemas/productSchema');
 
 const getSipDetails = (req, res) => {
@@ -10,18 +9,12 @@ const getSipDetails = (req, res) => {
     console.log(sipPath);
     fs.readFile(sipPath, 'utf8', (err, data) => {
         if (err) {
-            resp.success = false;
-            resp.errorMessage = "We can't fetch the product details";
-            resp.statusCode = 404;
-            res.send(resp);
+            res.send(new Response('Basketdetails fetch was failed',null));
         }
         else {
-            let response = getBasketDetails(data)
-            resp.success = true;
-            resp.successMessage = 'Basketdetails fetched successfully';
-            resp.statusCode = 200;
-            resp.results = response;
-            res.send(resp);
+            const basketResponse = new SIPBucket();
+            basketResponse.Basketdetails = getBasketDetails(data)
+            res.send(new Response('Basketdetails fetched successfully',basketResponse));
         }
     })
 }
@@ -73,19 +66,20 @@ function getBasketDetails(data) {
     const obj = [];
     const apivalue = JSON.parse(data);
     apivalue.forEach(element => {
-        const basket = new SipModel.SIPBucket();
-        basket.Basketdetails.ID = element.Basketdetails.ID;
-        basket.Basketdetails.Base_Value = element.Basketdetails.Base_Value;
-        basket.Basketdetails.Basket_name = element.Basketdetails.Basket_name;
-        basket.Basketdetails.Nudgeline1 = element.Basketdetails.Nudgeline1;
-        basket.Basketdetails.Nudgeline2 = element.Basketdetails.Nudgeline2;
-        basket.Basketdetails.Onelinertext = element.Basketdetails.Onelinertext;
+        const basket = new Basketdetails();
+        basket.ID = element.Basketdetails.ID;
+        basket.Base_Value = element.Basketdetails.Base_Value;
+        basket.Basket_name = element.Basketdetails.Basket_name;
+        basket.Nudgeline1 = element.Basketdetails.Nudgeline1;
+        basket.Nudgeline2 = element.Basketdetails.Nudgeline2;
+        basket.Onelinertext = element.Basketdetails.Onelinertext;
         element.StockList.forEach(e => {
-            const stockObj = new SipModel.StockList();
+            const stockObj = new StockList();
             stockObj.Basket_id = e.Basket_id;
             stockObj.Imagepath = e.Imagepath;
             stockObj.price = e.price;
             stockObj.qty = e.qty;
+            stockObj.totalPrice = parseFloat(e.qty * e.price).toFixed(1);
             stockObj.scripid = e.scripid;
             stockObj.stockName = e.stockName;
             stockObj.OriginalQty = e.qty;
@@ -93,6 +87,7 @@ function getBasketDetails(data) {
         })
         obj.push(basket);
     });
+    
     return obj;
 }
 

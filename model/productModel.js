@@ -1,6 +1,7 @@
 class SIPBucket {
     Basketdetails = new Basketdetails();
-    StockList = [];
+    NoOfMonths = [6,12,24,48,60];
+    selectMonth = 12;
 }
 class Basketdetails {
     ID;
@@ -9,12 +10,14 @@ class Basketdetails {
     Nudgeline1;
     Nudgeline2;
     Onelinertext;
+    StockList = []
 }
 class StockList {
     Basket_id;
     stockName;
     scripid;
     price;
+    totalPrice;
     qty;
     Imagepath;
     OriginalQty;
@@ -27,4 +30,5 @@ class SIPRequest {
 module.exports = {
     SIPBucket : SIPBucket,
     StockList : StockList,
+    Basketdetails : Basketdetails
 }
