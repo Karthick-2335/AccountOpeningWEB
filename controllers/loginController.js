@@ -1,18 +1,17 @@
 const { login, otpVerification } = require('../schemas/loginSchema');
+const { registration } = require('../schemas/registrationSchema');
+
 const { sendOTP } = require('../service/emailService');
 const webToken = require('../service/tokenGeneration');
-const response = require('../model/responseModel');
 const common = require('./commonController');
-const resp = new response();
+const {Response} = require('../model/responseModels');
+
 const loginUsers = async (req, res) => {
     try {
         const loginModel = req.body;
         const existUser = await otpVerification.find({ $and : [{authenticated : true},{$or : [{email : loginModel.email},{mobile : loginModel.mobile}]}]});
         if (existUser.length > 0) {
-            resp.success = false;
-            resp.errorMessage = "Email or Mobile already registered with us. Please resume the journey";
-            resp.statusCode = 200;
-            res.send(resp)
+            res.send(new Response(false,'Email or Mobile already registered with us. Please resume the journey',null))
         }
         else {
             const postLoginUsers = await login.create(loginModel);
@@ -22,23 +21,16 @@ const loginUsers = async (req, res) => {
                 var otp = Math.floor(1000 + Math.random() * 9000);
                 loginModel.otpNumber = otp;
                 loginModel.authenticated = false;
+                console.log(loginModel);
                 const postOtp = await otpVerification.create(loginModel);
                 const saveOtp = await postOtp.save();
                 sendOTP(loginModel.email, 'OTP Verification', otp);
             }
-            resp.success = true;
-            resp.successMessage = "Inserted successfully";
-            resp.statusCode = 200;
-            res.send(resp);
+            res.send(new Response(true,'Inserted successfully',null));
         }
     }
     catch (error) {
-        console.log(error);
-        resp.success = false;
-        resp.error = true;
-        resp.errorMessage = error;
-        resp.statusCode = 300;
-        res.send(resp);
+        res.send(new Response(false,'Insertion was Failed',null));
     }
 }
 
@@ -47,56 +39,59 @@ const validateOtp = async (req, res) => {
         const loginModel = req.body;
         if (loginModel.otp === '2335') //Default otp
         {
-            resp.success = true;
-            resp.successMessage = "OTP validate successfully";
-            resp.token = webToken;
-            resp.statusCode = 200;
-            resp.referenceNumber = common.generateRandomString(7)
-            res.send(resp);
+            let sendResponse = {
+                token : webToken,
+                referenceNumber : common.generateRandomString(7)
+            }
+            res.send(new Response(true,'OTP validate successfully',sendResponse));
         }
         else {
+            console.log(loginModel);
             const authentcation = await otpVerification.findOneAndUpdate({$and : [{ email: loginModel.email}, {otpNumber: loginModel.otp}, {active: 'Y' }]},{$set: {authenticated: true}});
-            if (authentcation.length > 0) {
-                resp.success = true;
-                resp.successMessage = "OTP validated successfully";
-                resp.token = webToken;
-                resp.statusCode = 200;
-                res.send(resp);
+            console.log(authentcation);
+            if (authentcation.otpNumber === loginModel.otp) {
+                let sendResponse = {
+                    token : webToken,
+                    referenceNumber : common.generateRandomString(7)
+                }
+                res.send(new Response(true,'OTP validate successfully',sendResponse));
             }
             else {
-                resp.success = false;
-                resp.error = true;
-                resp.errorMessage = "OTP validated failed";
-                resp.statusCode = 200;
-                res.send(resp);
+                res.send(new Response(false,'OTP validated failed',null));
             }
         }
 
     }
     catch (err) {
-        resp.success = false;
-        resp.error = true;
-        resp.errorMessage = err;
-        resp.statusCode = 300;
-        res.send(resp);
+        console.log(err);
+       res.send(new Response(false,'OTP validated failed',null));
     }
 }
 
-const resume = (req,res) => {
+const resume = async (req,res) => {
     try
     {
-        const panNumber = req.params.panNumber;
-        console.log(panNumber);
-        resp.success = true;
-        res.send(resp)
+        const pan = req.params.panNumber;
+        console.log(pan);
+        const existPan = await registration.find({panNumber : pan})
+        console.log(existPan);
+        if(existPan.length > 0)
+        {
+            const sendResponse = {
+                success : true,
+                token : webToken,
+                referenceNumber : existPan[0].referenceNumber
+            }
+            res.send(new Response(true,'PanNumber Already exist',sendResponse));
+        }
+        else
+        {
+            res.send(new Response(true,'PanNumber is not available please register',null));
+        }
     }
     catch(err)
     {
-        resp.success = false;
-        resp.error = true;
-        resp.errorMessage = err;
-        resp.statusCode = 300;
-        res.send(resp);
+        res.send(new Response('PanNumber is not available please register',null));
     }
 }
 

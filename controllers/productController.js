@@ -9,12 +9,12 @@ const getSipDetails = (req, res) => {
     console.log(sipPath);
     fs.readFile(sipPath, 'utf8', (err, data) => {
         if (err) {
-            res.send(new Response('Basketdetails fetch was failed',null));
+            res.send(new Response(false,'Basketdetails fetch was failed',null));
         }
         else {
             const basketResponse = new SIPBucket();
             basketResponse.Basketdetails = getBasketDetails(data)
-            res.send(new Response('Basketdetails fetched successfully',basketResponse));
+            res.send(new Response(true,'Basketdetails fetched successfully',basketResponse));
         }
     })
 }
@@ -23,26 +23,22 @@ const postSipDetails = async (req, res) => {
     try {
         const body = req.body;
         const postSIP = await new SIP({
-            ID: body.data[0].ID,
-            Base_Value: body.data[0].Base_Value,
-            Basket_name: body.data[0].Basket_name,
-            Nudgeline1: body.data[0].Nudgeline1,
-            Nudgeline2: body.data[0].Nudgeline2,
-            Onelinertext: body.data[0].Onelinertext,
-            StockList: splitStockArray(body.data[0].StockList)
+            ID: body.Basketdetails[0].ID,
+            Base_Value: body.Basketdetails[0].Base_Value,
+            Basket_name: body.Basketdetails[0].Basket_name,
+            Nudgeline1: body.Basketdetails[0].Nudgeline1,
+            Nudgeline2: body.Basketdetails[0].Nudgeline2,
+            Onelinertext: body.Basketdetails[0].Onelinertext,
+            ReferenceNumber : body.referenceNumber,
+            SelectMonth : body.selectMonth,
+            StockList: splitStockArray(body.Basketdetails[0].StockList)
         });
         const saveSIP = await postSIP.save();
-        res.status(200).json({
-            success: true,
-            data: 'Inserted successfully'
-        });
+        res.send(new Response(true,'Basketdetails inserted successfully',saveSIP));
     }
     catch (err) {
         console.log(err);
-        res.json({
-            success: false,
-            message: err
-        });
+        res.send(new Response(false,'Basketdetails insertion failed',null));
     }
 }
 

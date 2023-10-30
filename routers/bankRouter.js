@@ -1,6 +1,8 @@
 const router = require('express').Router();
-const {getIfscDetails} = require('./../controllers/bankController');
+const {getIfscDetails,getBank,postBank} = require('./../controllers/bankController');
 
-router.get('/:ifsc',getIfscDetails);
+router.get('/getIfsc/:ifsc',getIfscDetails);
+router.get('/:referenceNumber',getBank);
+router.post('/',postBank);
 
 module.exports = router;

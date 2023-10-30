@@ -29,6 +29,14 @@ const createBasket = mongodb.Schema({
         type: String,
         required: true
     },
+    ReferenceNumber : {
+        type : String,
+        required : true
+    },
+    SelectMonth : {
+        type : String,
+        required : true
+    },
     StockList: [{
         Basket_id: {
             type: Number,
