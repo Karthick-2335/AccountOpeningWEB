@@ -4,17 +4,18 @@ const {SIPBucket,Basketdetails,StockList} = require('./../model/productModel');
 const {Response}= require('./../model/responseModels');
 const { SIP } = require('./../schemas/productSchema');
 
-const getSipDetails = (req, res) => {
+const getSipDetails = async (req, res) => {
+    const refno = req.params.referenceNumber;
     const sipPath = path.join(__dirname, '../SIP_JSON.txt');
     console.log(sipPath);
-    fs.readFile(sipPath, 'utf8', (err, data) => {
+    fs.readFile(sipPath, 'utf8', async (err, data) => {
         if (err) {
             res.send(new Response(false,'Basketdetails fetch was failed',null));
         }
         else {
-            const basketResponse = new SIPBucket();
-            basketResponse.Basketdetails = getBasketDetails(data)
-            res.send(new Response(true,'Basketdetails fetched successfully',basketResponse));
+            console.log(refno);
+            const productdtl = await getBasketDetails(data,refno);
+            res.send(new Response(true,'Basketdetails fetched successfully',productdtl));
         }
     })
 }
@@ -22,17 +23,9 @@ const getSipDetails = (req, res) => {
 const postSipDetails = async (req, res) => {
     try {
         const body = req.body;
-        const postSIP = await new SIP({
-            ID: body.Basketdetails[0].ID,
-            Base_Value: body.Basketdetails[0].Base_Value,
-            Basket_name: body.Basketdetails[0].Basket_name,
-            Nudgeline1: body.Basketdetails[0].Nudgeline1,
-            Nudgeline2: body.Basketdetails[0].Nudgeline2,
-            Onelinertext: body.Basketdetails[0].Onelinertext,
-            ReferenceNumber : body.referenceNumber,
-            SelectMonth : body.selectMonth,
-            StockList: splitStockArray(body.Basketdetails[0].StockList)
-        });
+        console.log(body);
+        const exist = await SIP.find({referenceNumber : body.referenceNumber});
+        const postSIP = await SIP.create(body[0])
         const saveSIP = await postSIP.save();
         res.send(new Response(true,'Basketdetails inserted successfully',saveSIP));
     }
@@ -42,49 +35,69 @@ const postSipDetails = async (req, res) => {
     }
 }
 
-function splitStockArray(arr) {
-    let StockList = [];
-    arr.forEach(e => {
-        const stockObj = new SipModel.StockList();
-        stockObj.Basket_id = e.Basket_id;
-        stockObj.Imagepath = e.Imagepath;
-        stockObj.price = e.price;
-        stockObj.qty = e.qty;
-        stockObj.scripid = e.scripid;
-        stockObj.stockName = e.stockName;
-        stockObj.OriginalQty = e.OriginalQty;
-        StockList.push(stockObj)
-    });
-    return StockList;
-}
-
-function getBasketDetails(data) {
+async function getBasketDetails(data,refno) {
     const obj = [];
-    const apivalue = JSON.parse(data);
-    apivalue.forEach(element => {
-        const basket = new Basketdetails();
-        basket.ID = element.Basketdetails.ID;
-        basket.Base_Value = element.Basketdetails.Base_Value;
-        basket.Basket_name = element.Basketdetails.Basket_name;
-        basket.Nudgeline1 = element.Basketdetails.Nudgeline1;
-        basket.Nudgeline2 = element.Basketdetails.Nudgeline2;
-        basket.Onelinertext = element.Basketdetails.Onelinertext;
-        element.StockList.forEach(e => {
-            const stockObj = new StockList();
-            stockObj.Basket_id = e.Basket_id;
-            stockObj.Imagepath = e.Imagepath;
-            stockObj.price = e.price;
-            stockObj.qty = e.qty;
-            stockObj.totalPrice = parseFloat(e.qty * e.price).toFixed(1);
-            stockObj.scripid = e.scripid;
-            stockObj.stockName = e.stockName;
-            stockObj.OriginalQty = e.qty;
-            basket.StockList.push(stockObj);
-        })
-        obj.push(basket);
-    });
-    
-    return obj;
+    const exist = await SIP.find({referenceNumber : refno});
+    const basketResponse = new SIPBucket();
+    let apivalue = JSON.parse(data);
+    if(exist.length > 0)
+    {
+        apivalue =  exist;
+        apivalue.forEach(element => {
+            const basket = new Basketdetails();
+            basket.ID = element.ID;
+            basket.Base_Value = element.Base_Value;
+            basket.Basket_name = element.Basket_name;
+            basket.Nudgeline1 = element.Nudgeline1;
+            basket.Nudgeline2 = element.Nudgeline2;
+            basket.Onelinertext = element.Onelinertext;
+            element.StockList.forEach(e => {
+                const stockObj = new StockList();
+                stockObj.Basket_id = e.Basket_id;
+                stockObj.Imagepath = e.Imagepath;
+                stockObj.price = e.price;
+                stockObj.qty = e.qty;
+                stockObj.totalPrice = parseFloat(e.qty * e.price).toFixed(1);
+                stockObj.scripid = e.scripid;
+                stockObj.stockName = e.stockName;
+                stockObj.OriginalQty = e.qty;
+                basket.StockList.push(stockObj);
+            })
+            obj.push(basket);
+            basketResponse.Basketdetails = obj;
+            basketResponse.selectMonth = apivalue[0].SelectMonth;
+
+        });
+    }
+    else
+    {
+        apivalue.forEach(element => {
+            const basket = new Basketdetails();
+            basket.ID = element.Basketdetails.ID;
+            basket.Base_Value = element.Basketdetails.Base_Value;
+            basket.Basket_name = element.Basketdetails.Basket_name;
+            basket.Nudgeline1 = element.Basketdetails.Nudgeline1;
+            basket.Nudgeline2 = element.Basketdetails.Nudgeline2;
+            basket.Onelinertext = element.Basketdetails.Onelinertext;
+            element.StockList.forEach(e => {
+                const stockObj = new StockList();
+                stockObj.Basket_id = e.Basket_id;
+                stockObj.Imagepath = e.Imagepath;
+                stockObj.price = e.price;
+                stockObj.qty = e.qty;
+                stockObj.totalPrice = parseFloat(e.qty * e.price).toFixed(1);
+                stockObj.scripid = e.scripid;
+                stockObj.stockName = e.stockName;
+                stockObj.OriginalQty = e.qty;
+                basket.StockList.push(stockObj);
+            })
+            obj.push(basket);
+            basketResponse.Basketdetails = obj;
+
+        });
+    }
+        
+    return basketResponse;
 }
 
 module.exports = {

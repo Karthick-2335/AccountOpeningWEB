@@ -29,7 +29,7 @@ const createBasket = mongodb.Schema({
         type: String,
         required: true
     },
-    ReferenceNumber : {
+    referenceNumber : {
         type : String,
         required : true
     },

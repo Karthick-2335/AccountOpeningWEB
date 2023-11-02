@@ -6,7 +6,6 @@ const getIfscDetails = async (req,res) => {
     try
     {
         const ifsc = req.params.ifsc;
-        console.log(ifsc);
         const config = 
         { 
             method: 'get', 
@@ -22,7 +21,6 @@ const getIfscDetails = async (req,res) => {
         {
             res.send(new Response(false,"We can't fetch the details against your IFSC. Please provide the valid IFSC",null))
         }
-        res.send(resp);
     }
     catch(error)
     {
@@ -55,7 +53,6 @@ const postBank = async(req,res) => {
     try
     {
         const bankdtl = req.body;
-        console.log(bankdtl);
         const exist = await bank.find({referenceNumber : bankdtl.referenceNumber});
         if(exist.length > 0)
         {

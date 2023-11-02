@@ -19,7 +19,7 @@ app.use('/api',loginRouter);
 app.use('/api/registration',validateToken,registrationRouter);
 app.use('/api/profile',validateToken,profileRouter);
 app.use('/api/bank',validateToken,bankRouter);
-app.use('/api/product',productRouter);
+app.use('/api/product',validateToken,productRouter);
 app.use('/api/common',commonRouter);
 
 dbConnection.then(() => app.listen(4300)).
